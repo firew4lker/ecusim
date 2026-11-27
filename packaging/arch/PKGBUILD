@@ -1,0 +1,54 @@
+# Maintainer: Your Name <you@example.com>
+#
+# Build:   ./build.sh            (makes the source tarball, then runs makepkg)
+#          ./build.sh -si        (also installs dependencies and the package)
+
+pkgname=ecusim
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Engine control unit simulator: 1.6 L petrol engine and 5-speed car, generic OBD-II over CAN, fault injection"
+arch=('any')
+license=('LicenseRef-unknown')
+depends=(
+  'python'
+  'pyside6'
+  'python-pyqtgraph'
+  'python-numpy'
+  'python-can'
+  'python-msgpack'
+  'python-pyserial'
+)
+makedepends=(
+  'python-build'
+  'python-installer'
+  'python-setuptools'
+  'python-wheel'
+)
+checkdepends=('python-pytest')
+optdepends=('can-utils: candump/cansend and the kernel ISO-TP tools for bench checks (AUR)')
+install=ecusim.install
+source=("$pkgname-$pkgver.tar.gz")
+sha256sums=('9a571bf5a46316e28bee3c3ea693f60786a537e34f45619ca65304e5df08fd73')
+
+build() {
+  cd "$pkgname-$pkgver"
+  python -m build --wheel --no-isolation
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  # Real-hardware tests skip themselves unless ECUSIM_HW is set; the UI tests run offscreen.
+  QT_QPA_PLATFORM=offscreen python -m pytest -q -p no:cacheprovider tests
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  python -m installer --destdir="$pkgdir" dist/*.whl
+
+  install -Dm644 packaging/linux/ecusim.desktop "$pkgdir/usr/share/applications/ecusim.desktop"
+  install -Dm644 packaging/linux/ecusim.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/ecusim.svg"
+
+  local doc="$pkgdir/usr/share/doc/$pkgname"
+  install -Dm644 README.md docs/USAGE.md docs/DESIGN.md -t "$doc"
+  install -Dm644 docs/images/* -t "$doc/images"
+}

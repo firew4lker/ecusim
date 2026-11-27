@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+out/
+*.egg-info/
+.venv*/
+build/
+dist/
+packaging/arch/src/
+packaging/arch/pkg/
+packaging/arch/*.tar.gz
+packaging/arch/*.pkg.tar.*

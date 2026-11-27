@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ECU Simulator
+GenericName=Engine control unit simulator
+Comment=Simulated petrol-engine ECU with generic OBD-II over CAN, for training and scan-tool testing
+Exec=ecusim %U
+Icon=ecusim
+Terminal=false
+Categories=Education;Engineering;
+Keywords=OBD;OBD-II;CAN;ECU;automotive;diagnostics;scan tool;
+StartupWMClass=ecusim

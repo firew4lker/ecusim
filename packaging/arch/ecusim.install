@@ -1,0 +1,17 @@
+post_install() {
+  cat <<'MSG'
+==> ECU Simulator installed. Start it from the application menu or run:  ecusim
+==> User guide: /usr/share/doc/ecusim/USAGE.md
+==> CAN adapters:
+    - SocketCAN (CANable/candleLight, PCAN, Kvaser):
+        sudo ip link set can0 up type can bitrate 500000
+        ecusim --interface socketcan --channel can0
+    - Serial slcan adapters (/dev/ttyACM*, /dev/ttyUSB*) need your user in the 'uucp' group:
+        sudo usermod -aG uucp $USER     (log out and back in)
+        ecusim --interface slcan --channel /dev/ttyACM0
+MSG
+}
+
+post_upgrade() {
+  :
+}
