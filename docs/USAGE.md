@@ -164,7 +164,10 @@ it is complete since codes were cleared (PID 01) and this drive cycle (PID 41). 
 follow the real logic (*auto*) or be forced *complete* or *incomplete*.
 
 **CAN.** Choose and connect the CAN adapter, and watch the bus trace. Every frame is decoded, so students can
-follow a request and its multi-frame answer.
+follow a request and its multi-frame answer. Requests that came through the emulated ELM327 are marked *ELM*.
+
+**ELM327.** Makes the simulator look like an ELM327 adapter to phone apps and PC programs, over Wi-Fi, a serial
+port or Bluetooth. See [section 5](#with-an-elm327-app-no-hardware-at-all).
 
 **Environment.** Outside temperature, air pressure (altitude), road grade, fuel level and time acceleration.
 **Cold soak (overnight at ambient)** and **Hot soak (stopped a few minutes ago)** reset the engine temperatures.
@@ -191,6 +194,42 @@ The built-in tester needs nothing extra. Start the simulator normally and, in a 
 ./ecusim tester                                   # reads VIN, codes, readiness and live values
 ./ecusim tester --live 0C,05,0B,10,0E,06          # live RPM, coolant, MAP, MAF, timing, STFT
 ```
+
+### With an ELM327 app (no hardware at all)
+
+ecusim can pretend to be an **ELM327 adapter**, the cheap USB, Bluetooth and Wi-Fi adapters that most
+diagnostic apps and PC programs use. The app then talks to the simulated car directly: no CAN adapter, no OBD
+socket, no cables. This is the easiest way to give every student a scan tool, on their own phone or laptop.
+
+Open the **ELM327** tab and switch on the connections you need. Each one is a separate adapter, all are off
+until you switch them on, and the choice is remembered for next time.
+
+![ELM327 tab](images/elm327_tab.png)
+
+| Connection | Use it for | In the app |
+|---|---|---|
+| **Wi-Fi / TCP** | Phone apps (Torque, Car Scanner, OBD Auto Doctor, …) and python-OBD | Choose a **Wi-Fi** adapter, IP and port as shown on the tab (default port 35000). Tick *Allow phones and other computers to connect* first; the phone must be on the same network. |
+| **Virtual serial port** (Linux, macOS) | PC programs that open a serial port; Windows programs under Wine | Use the path shown, e.g. `/dev/ttyELM327`. Under Wine, link it to a COM port: `ln -s /dev/ttyELM327 ~/.wine/dosdevices/com5`. |
+| **Existing serial port** | **Windows** programs (ScanMaster-ELM, OBD Auto Doctor, …), or a second PC on a null-modem cable | Install [com0com](https://com0com.sourceforge.net/): it creates a linked pair such as COM10 ↔ COM11. Choose COM11 here and COM10 in the program. |
+| **Bluetooth** (Linux) | Android apps that pair with "OBDII" Bluetooth adapters | Pair the phone with this computer in the system Bluetooth settings, then choose this computer in the app. Many apps only list devices named *OBDII*; tick *Rename this computer's Bluetooth* for those. On Windows, add an *incoming* COM port in the Bluetooth settings and use it as an existing serial port. |
+
+iPhones and iPads can only use **Wi-Fi**: iOS apps do not use classic Bluetooth adapters.
+
+The same switches exist on the command line, for one session only:
+
+```bash
+./ecusim --elm-tcp 0.0.0.0:35000          # phones on the network can connect
+./ecusim --elm-pty --elm-serial COM11      # virtual serial port and a com0com port
+./ecusim headless --no-can --elm-tcp --start   # no window, no CAN, just the adapter
+```
+
+The right half of the tab shows what the app sends and what the adapter answers, and the **CAN** tab shows the
+CAN frames a real adapter would have sent (marked *ELM*). So students can still follow the whole exchange.
+
+The adapter answers like an ELM327 v1.5 (the version clones report). The car follows the CAN tab's settings
+(11- or 29-bit, 500 or 250 kbit/s), so an app's protocol search finds what a real car of that type would have.
+*Reports itself as* changes the version string for apps that insist on v2.1. Apps that need an OBDLink/STN
+adapter or a brand's own protocols (FORScan, for example) will not work.
 
 ### With a real scan tool
 
@@ -568,6 +607,9 @@ show that the trims are normal, the monitor passes and, after the right number o
 - A projector works well with the window full-screen; the cluster, charts and lamps are readable at a distance.
 - On a real scan tool, "no communication" almost always means the key is not ON, or pin 16 has no 12 V
   (section 8).
+- **A scan tool for everyone:** switch on *ELM327 → Wi-Fi / TCP* with *Allow phones…* ticked and let the
+  students connect their phones' OBD apps. Only one app can be connected at a time per adapter, so pass the
+  car around, or run one simulator per group.
 
 ---
 
@@ -581,6 +623,9 @@ show that the trims are normal, the monitor passes and, after the right number o
 | CAN tab: "cannot open CAN interface" | Linux: is the interface up (`ip link show can0`)? For `/dev/ttyACM0`, your user must be in the `dialout` group (`uucp` on Arch Linux). Windows: is the adapter's driver installed? |
 | Occasional slow or missing answers with an slcan adapter on a busy bus | slcan firmware can drop frames under heavy bus traffic (the scan tool just retries). candleLight firmware on the same CANable does not. |
 | The window does not open (Linux) | Run it from a terminal to see the message. If `/tmp` does not allow running programs, start it with `TMPDIR=$HOME/.cache ./ecusim`. |
+| An ELM327 app says "unable to connect" or "no data" | Ignition ON? (The adapter answers with the key off, the car does not.) Is the app set to *automatic* protocol, or to CAN 11-bit 500 kbit/s? |
+| A phone can't reach the Wi-Fi adapter | Is *Allow phones and other computers to connect* ticked? Same Wi-Fi network as the computer? Some school networks block devices from reaching each other; a phone hotspot that the computer joins works around that. Check the computer's firewall allows the port (35000). |
+| The ELM327 tab says the port is in use | Another program (or a second ecusim) already uses that TCP port or serial port. Pick another one. |
 | A monitor never completes | Read its hint on the Monitors tab. EVAP and the O2 heater need a cold start (Environment → Cold soak). |
 
 ---

@@ -10,7 +10,7 @@ VENV=.venv-build
 if [ ! -x "$VENV/bin/python" ]; then
     "$PY" -m venv "$VENV"
 fi
-"$VENV/bin/pip" install -q --upgrade "python-can>=4.3" msgpack pyserial gs_usb PySide6 pyqtgraph pyinstaller
+"$VENV/bin/pip" install -q --upgrade "python-can>=4.3" msgpack pyserial gs_usb jeepney PySide6 pyqtgraph pyinstaller
 
 # Qt plugins the app never uses but which drag in large dependency trees:
 #  - GTK3 platform theme: libgtk-3, a second ICU, cairo, ... (the app uses its own Fusion style)

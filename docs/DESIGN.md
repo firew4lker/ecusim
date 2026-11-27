@@ -538,7 +538,7 @@ Warm idle fuel rate ≈ 0.85 L/h.
 - **02:** frame 0 only. PID 02 returns the DTC that caused the freeze frame.
 - **06:** see 6.4.
 
-### 7.7 ELM327 adapter emulation (planned, M7)
+### 7.7 ELM327 adapter emulation (M7)
 
 **Goal:** diagnostic software that expects an ELM327 adapter (USB, Bluetooth or Wi-Fi) can connect to ecusim
 with **no CAN hardware**. ecusim pretends to be the adapter *and* the car:
@@ -590,8 +590,9 @@ because some apps look for v2.1.
   formatting, `ATD0/1` show DLC, `ATR0/1` responses.
 - **Protocol:** `ATSP n`, `ATTP n`, `ATDP`, `ATDPN`. Protocol 0 (auto) "searches" on the first request
   (`SEARCHING...`), then settles on **6** (11-bit, 500k) or **7** (29-bit, 500k), whichever ecusim's CAN
-  settings say. Protocols 8/9 (250k) are answered when ecusim is set to 250 kbit/s. Other protocols (J1850,
-  ISO 9141, KWP) → `UNABLE TO CONNECT`.
+  settings say. Protocols 8/9 (250k) are answered when ecusim is set to 250 kbit/s. A CAN protocol with the
+  wrong ID format → `NO DATA`, the wrong bitrate → `CAN ERROR`. ISO 9141 / KWP → `BUS INIT: ...ERROR`, J1850
+  and the rest → `NO DATA`. With the key off an automatic search ends in `UNABLE TO CONNECT`.
 - **Addressing:** `ATSH` (functional `7DF` or physical `7E0`; the server's functional/physical rules apply),
   `ATCRA`, `ATCF`/`ATCM`. An unknown header gets `NO DATA`.
 - **Timing:** `ATST`, `ATAT0/1/2`; a request ending with a response count (`010C1`) returns after that many
@@ -611,11 +612,12 @@ because some apps look for v2.1.
   still reads the battery voltage, like an adapter powered from the OBD socket.
 
 #### 7.7.5 Code structure
-- `ecusim/elm/emulator.py`: pure state machine, **no I/O**: text in, text out, with a clock passed in. Uses
-  the existing ISO-TP code to produce the CAN frames for headers-on output and the trace.
+- `ecusim/elm/emulator.py`: pure state machine, **no I/O**: bytes in, text out. It reports how long to
+  "wait for the car" and the CAN frames a real adapter would exchange (for the trace).
 - `ecusim/elm/transports.py`: TCP, pty, serial and Bluetooth transports, one thread each, each feeding its own
-  emulator instance.
-- `ecusim/ui/panels.py`: the ELM327 tab. `ecusim/cli.py` and `ecusim/ui/app.py`: the flags.
+  emulator instance. Bluetooth uses `jeepney` (pure-Python D-Bus) to register the profile with BlueZ.
+- `ecusim/elm/manager.py`: settings, on/off, `config.json`, traces. `ecusim/elm/cli_args.py`: the flags.
+- `ecusim/ui/elm_panel.py`: the ELM327 tab.
 
 #### 7.7.6 Tests
 - Unit tests of the state machine against recorded real-ELM327 transcripts (init sequences of python-OBD,

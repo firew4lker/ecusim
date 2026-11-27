@@ -318,7 +318,7 @@ class CanPanel(QWidget):
         tb = QHBoxLayout()
         tb.addWidget(self.trace_pause)
         tb.addStretch(1)
-        tbox = QGroupBox("Bus trace (last 200 frames)")
+        tbox = QGroupBox("Bus trace (last 200 frames; ELM = sent through the emulated ELM327)")
         tl = QVBoxLayout(tbox)
         tl.addLayout(tb)
         tl.addWidget(self.trace)
@@ -375,18 +375,21 @@ class CanPanel(QWidget):
         srv = self.ctl.can
         if srv is None:
             self.stats.setText("")
-            return
-        st = srv.stats
-        self.stats.setText(f"rx {st['rx']}  tx {st['tx']}  requests {st['requests']}  "
-                           f"responses {st['responses']}  errors {st['errors']}")
+        else:
+            st = srv.stats
+            self.stats.setText(f"rx {st['rx']}  tx {st['tx']}  requests {st['requests']}  "
+                               f"responses {st['responses']}  errors {st['errors']}")
         if self.trace_pause.isChecked():
             return
-        rows = list(srv.trace)[-200:]
+        # CAN frames, plus the frames an emulated ELM327 adapter would have exchanged (tagged ELM)
+        rows = [(e, "") for e in (srv.trace if srv is not None else [])]
+        rows += [(e, " ELM") for e in self.ctl.elm.trace]
+        rows = sorted(rows, key=lambda r: r[0].t)[-200:]
         self.trace.setRowCount(len(rows))
-        t0 = rows[0].t if rows else 0.0
-        for i, e in enumerate(rows):
+        t0 = rows[0][0].t if rows else 0.0
+        for i, (e, tag) in enumerate(rows):
             self.trace.setItem(i, 0, _item(f"{e.t - t0:9.3f}", mono=True))
-            self.trace.setItem(i, 1, _item(e.direction.upper()))
+            self.trace.setItem(i, 1, _item(e.direction.upper() + tag))
             self.trace.setItem(i, 2, _item(f"{e.arb_id:X}", mono=True))
             self.trace.setItem(i, 3, _item(e.data.hex(" ").upper(), mono=True))
             self.trace.setItem(i, 4, _item(describe_frame(e.data), mono=True))

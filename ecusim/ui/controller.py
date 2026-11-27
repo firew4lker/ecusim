@@ -12,6 +12,8 @@ import threading
 from pathlib import Path
 
 from ..ecu.ecm import ECM
+from ..elm.emulator import CarLink
+from ..elm.manager import ElmManager
 from ..faults.manager import FaultSetting
 from ..faults.presets import PresetStore
 from ..obd.can_transport import CanConfig, EcuCanServer
@@ -43,6 +45,16 @@ class SimController:
         self.fault_settings: dict[str, FaultSetting] = {}  # UI-side mirror of the active faults
         self.presets = PresetStore(Path(state_dir) / "presets.json" if state_dir is not None else None)
         self.runner.start()
+        car = CarLink(self.obd.handle, self.runner.powered, lambda: float(self.runner.latest.get("vbatt", 12.6)),
+                      self._car_bus)
+        self.elm = ElmManager(car, Path(state_dir) / "config.json" if state_dir is not None else None)
+
+    def _car_bus(self) -> tuple[bool, int, int | None]:
+        """The simulated car's CAN settings, as an ELM327 would find them."""
+        c = self.can_cfg
+        if c is None:
+            return False, 500_000, 0xAA
+        return c.extended, c.bitrate, c.padding
 
     # ------------------------------------------------------------------ state
     @property
@@ -267,6 +279,11 @@ class SimController:
             return
         self._shut_down = True
         self.disconnect_can()
+        self.elm.stop_all()
+        try:
+            self.elm.save()
+        except OSError:
+            pass
         try:
             self.save()
         except TimeoutError:

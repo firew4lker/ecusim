@@ -11,6 +11,8 @@ real CAN bus, so any scan tool can read it like a car.
   purge, idle control, limp home.
 - **Full generic OBD-II**: 42 live PIDs, freeze frame, pending/confirmed/permanent codes, Mode 06,
   readiness monitors, VIN; 11- or 29-bit CAN via SocketCAN, slcan, PCAN, Kvaser, candleLight.
+- **ELM327 adapter emulation**: phone apps and PC programs connect over Wi-Fi/TCP, a virtual or real serial
+  port, or Bluetooth, with no CAN hardware at all. Each connection switched on or off separately.
 - **About 50 injectable faults** (vacuum leaks, misfires, worn catalyst, sensor circuits, EVAP leaks, ...)
   that the simulated ECU has to detect by itself, with one-click classroom scenarios.
 
@@ -112,7 +114,22 @@ Real adapter, e.g. CANable with slcan firmware, wired to a female OBD-II connect
 .venv/bin/python -m ecusim --interface slcan --channel /dev/ttyACM0 --bitrate 500000 --start
 ```
 
-Add `--state-dir DIR` to keep ECU memory between runs. Console commands: `on`, `off`, `start`, `pedal <0-100>`, `status`, `bus`, `speed <x>`, `quit`.
+Add `--state-dir DIR` to keep ECU memory between runs. Console commands: `on`, `off`, `start`, `pedal <0-100>`, `status`, `bus`, `elm`, `speed <x>`, `quit`.
+
+## ELM327 adapter emulation (no CAN hardware)
+
+Diagnostic apps that use an ELM327 adapter can connect straight to the simulator. Switch each connection on in
+the **ELM327** tab, or for one session on the command line:
+
+```bash
+.venv/bin/python -m ecusim.ui --elm-tcp 0.0.0.0:35000    # Wi-Fi adapter: phone apps on the network
+.venv/bin/python -m ecusim.ui --elm-pty                  # virtual serial port (Linux/macOS)
+.venv/bin/python -m ecusim.ui --elm-serial COM11         # Windows: one end of a com0com pair
+.venv/bin/python -m ecusim.ui --elm-bt                   # Bluetooth serial (Linux, BlueZ)
+.venv/bin/python -m ecusim --no-can --elm-tcp --start    # headless, adapter only
+```
+
+python-OBD works too: `obd.OBD("socket://127.0.0.1:35000")`. Details in [docs/USAGE.md](docs/USAGE.md#with-an-elm327-app-no-hardware-at-all).
 
 ## Serial (slcan) adapters
 

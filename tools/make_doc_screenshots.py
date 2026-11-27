@@ -221,7 +221,29 @@ def main() -> int:
     s.ctl.disconnect_can()
     s.close()
 
-    # 10. Environment tab
+    # 10. ELM327 tab: a phone-style app connected over TCP
+    s = Session()
+    s.ctl.set_key("on")
+    s.ctl.runner.submit(lambda sim: sim.request_start())
+    pump(3.0)
+    elm = s.win.elm
+    elm.switch["tcp"].setChecked(True)
+    import socket
+
+    with socket.create_connection(("127.0.0.1", s.ctl.elm.settings["tcp"]["port"]), timeout=5) as c:
+        for cmd in ("ATZ", "ATE0", "ATL0", "ATH0", "ATSP0", "0100", "010C", "0105", "0902", "03", "ATRV"):
+            c.sendall((cmd + "\r").encode())
+            buf = b""
+            while not buf.endswith(b">"):
+                buf += c.recv(512)
+        s.tab(elm)
+        elm.refresh()
+        pump(0.5)
+        s.shot("elm327_tab.png")
+    s.ctl.elm.stop_all()
+    s.close()
+
+    # 11. Environment tab
     s = Session()
     s.tab(s.win.env)
     s.shot("environment_tab.png")

@@ -25,7 +25,8 @@ makedepends=(
   'python-wheel'
 )
 checkdepends=('python-pytest')
-optdepends=('can-utils: candump/cansend and the kernel ISO-TP tools for bench checks (AUR)')
+optdepends=('can-utils: candump/cansend and the kernel ISO-TP tools for bench checks (AUR)'
+            'python-jeepney: Bluetooth ELM327 adapter emulation (BlueZ)')
 install=ecusim.install
 source=("$pkgname-$pkgver.tar.gz")
 sha256sums=('1a548158d9e9d4413dc141f6cb7327b40d1b948eb0f51ca9d01918ce917ad091')

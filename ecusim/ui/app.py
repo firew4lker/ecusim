@@ -5,6 +5,7 @@
     python -m ecusim.ui --interface socketcan --channel vcan0
     python -m ecusim.ui --interface slcan --channel /dev/ttyACM0
     python -m ecusim.ui --no-can
+    python -m ecusim.ui --no-can --elm-tcp --elm-pty      # ELM327 adapter emulation only
 """
 
 from __future__ import annotations
@@ -28,6 +29,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--state-dir", default=None, help="where ECU memory is kept (default: per-user data dir)")
     ap.add_argument("--no-state", action="store_true", help="start fresh and do not save ECU memory")
     ap.add_argument("--time-scale", type=float, default=1.0)
+    from ..elm.cli_args import add_arguments as add_elm_arguments
+
+    add_elm_arguments(ap)
     ap.add_argument("--quit-after", type=float, default=None, help=argparse.SUPPRESS)  # smoke tests
     ap.add_argument("--screenshot", default=None, help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
@@ -56,8 +60,13 @@ def main(argv: list[str] | None = None) -> int:
                                       tty_baudrate=args.tty_baudrate))
         except Exception as e:
             print(f"CAN not connected: {e}", file=sys.stderr)
+    from ..elm.cli_args import apply as apply_elm
+
+    for err in apply_elm(ctl.elm, args):
+        print(err, file=sys.stderr)
     win = MainWindow(ctl)
     win.can.sync_from_controller()
+    win.elm.sync()
     win.show()
     if args.quit_after is not None:
         from PySide6.QtCore import QTimer

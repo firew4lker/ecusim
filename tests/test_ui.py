@@ -132,6 +132,32 @@ def test_trip_and_odometer_reset(app, win):
     assert wait_for(app, lambda: ctl.current_sim.plant.vehicle.odometer_m == 0.0, 1.0)
 
 
+def test_elm_tab_switches_tcp(app, win):
+    import socket
+
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    panel = win.elm
+    win.tabs.setCurrentWidget(panel)
+    panel.tcp_port.setValue(port)
+    panel.switch["tcp"].setChecked(True)
+    assert win.ctl.elm.is_running("tcp") and not panel.tcp_port.isEnabled()
+    c = socket.create_connection(("127.0.0.1", port), timeout=5)
+    c.sendall(b"ATI\r")
+    buf = b""
+    while not buf.endswith(b">"):
+        buf += c.recv(256)
+    assert b"ELM327" in buf
+    pump(app, 0.3)
+    assert "connected" in panel.state["tcp"].text()
+    c.close()
+    panel.switch["tcp"].setChecked(False)
+    assert not win.ctl.elm.is_running("tcp") and panel.tcp_port.isEnabled()
+    panel.switch["serial"].setChecked(True)  # no port chosen: refused, switch goes back off
+    assert not panel.switch["serial"].isChecked() and "no serial port" in panel.state["serial"].text()
+
+
 def test_hand_throttle_holds_gas(app, win):
     ctl = win.ctl
     sim_pedal = lambda: ctl.call(lambda s: s.driver.pedal)  # noqa: E731

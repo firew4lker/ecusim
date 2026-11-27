@@ -4,6 +4,7 @@
     python -m ecusim --interface socketcan --channel vcan0
     python -m ecusim --interface slcan --channel /dev/ttyACM0 --bitrate 500000 --start
     python -m ecusim --interface udp_multicast --channel 239.74.163.2 --start   # no hardware
+    python -m ecusim --no-can --elm-tcp --start                               # ELM327 adapter only
 """
 
 from __future__ import annotations
@@ -12,7 +13,12 @@ import argparse
 import sys
 import time
 
+from pathlib import Path
+
 from .core.signals import KEY_OFF, KEY_ON
+from .elm.cli_args import apply as apply_elm
+from .elm.emulator import CarLink
+from .elm.manager import ElmManager
 from .obd.can_transport import CanConfig, EcuCanServer
 from .obd.server import ObdServer, ServerConfig
 from .obd.vehicle_info import VehicleInfo, vin_is_valid
@@ -26,6 +32,7 @@ HELP = """commands:
   pedal <0-100>       accelerator pedal %
   status              print live values
   bus                 print CAN statistics and the last frames
+  elm                 print ELM327 adapter status and the last commands
   speed <x>           time acceleration (1 = real time)
   quit"""
 
@@ -52,6 +59,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--time-scale", type=float, default=1.0)
     ap.add_argument("--no-console", action="store_true", help="run without the interactive console")
     ap.add_argument("--state-dir", default=None, help="load/save ECU keep-alive memory here")
+    ap.add_argument("--no-can", action="store_true", help="no CAN bus (use with an --elm-... switch)")
+    from .elm.cli_args import add_arguments as add_elm_arguments
+
+    add_elm_arguments(ap)
     args = ap.parse_args(argv)
 
     info = VehicleInfo(region=args.region) if args.vin is None else VehicleInfo(vin=args.vin, region=args.region)
@@ -71,18 +82,28 @@ def main(argv: list[str] | None = None) -> int:
                     on_clear=lambda: runner.submit(lambda s: s.ecu.diag.clear()))
     cfg = CanConfig(args.interface, args.channel, args.bitrate, args.extended, _parse_padding(args.padding),
                     tty_baudrate=args.tty_baudrate)
-    can_srv = EcuCanServer(cfg, obd.handle, runner.powered)
+    can_srv = None if args.no_can else EcuCanServer(cfg, obd.handle, runner.powered)
+    car = CarLink(obd.handle, runner.powered, lambda: float(runner.latest.get("vbatt", 12.6)),
+                  lambda: (cfg.extended, cfg.bitrate, cfg.padding))
+    elm = ElmManager(car, Path(args.state_dir) / "config.json" if args.state_dir else None)
 
     runner.start()
-    try:
-        can_srv.start()
-    except Exception as e:  # python-can raises different types per backend
-        runner.stop()
-        print(f"cannot open CAN interface {cfg.interface}:{cfg.channel}: {e}", file=sys.stderr)
-        return 2
-    addr = cfg.addr
-    print(f"ECU on {cfg.interface}:{cfg.channel} {'29' if cfg.extended else '11'}-bit, "
-          f"request 0x{addr['request']:X}/0x{addr['functional']:X}, response 0x{addr['response']:X}")
+    if can_srv is not None:
+        try:
+            can_srv.start()
+        except Exception as e:  # python-can raises different types per backend
+            runner.stop()
+            print(f"cannot open CAN interface {cfg.interface}:{cfg.channel}: {e}", file=sys.stderr)
+            return 2
+        addr = cfg.addr
+        print(f"ECU on {cfg.interface}:{cfg.channel} {'29' if cfg.extended else '11'}-bit, "
+              f"request 0x{addr['request']:X}/0x{addr['functional']:X}, response 0x{addr['response']:X}")
+    for err in apply_elm(elm, args):
+        print(err, file=sys.stderr)
+    for kind, t in elm.transports.items():
+        print(f"ELM327 {t.title}: {t.status()}")
+    if can_srv is None and not elm.transports:
+        print("warning: no CAN bus and no ELM327 transport: nothing can talk to the ECU", file=sys.stderr)
     print(f"VIN {info.vin}", flush=True)
 
     def key(k: str) -> None:
@@ -128,15 +149,23 @@ def main(argv: list[str] | None = None) -> int:
             elif cmd == "status":
                 status()
             elif cmd == "bus":
-                print(can_srv.stats)
-                for e in list(can_srv.trace)[-10:]:
+                if can_srv is not None:
+                    print(can_srv.stats)
+                for e in sorted(list(can_srv.trace if can_srv else []) + list(elm.trace), key=lambda e: e.t)[-10:]:
                     print(f"{e.t:12.3f} {e.direction} {e.arb_id:X} {e.data.hex(' ')}")
+            elif cmd == "elm":
+                for kind, t in elm.transports.items():
+                    print(f"{t.title}: {t.status()} {elm.counters(kind)}")
+                for line in list(elm.log)[-10:]:
+                    print(f"  [{line.kind}] {line.who}: {line.text}")
             else:
                 print(HELP)
     except KeyboardInterrupt:
         pass
     finally:
-        can_srv.stop()
+        elm.stop_all()
+        if can_srv is not None:
+            can_srv.stop()
         if store is not None:
             done = []
             runner.submit(lambda s: done.append(capture(s, info)))

@@ -25,7 +25,8 @@ ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
 # python-can loads its interface backends by name at run time; ship all of them
 hidden = collect_submodules("can.interfaces") + collect_submodules("ecusim") + ["msgpack"]
 # candleLight / CANable on Windows and macOS goes through libusb (gs_usb + pyusb)
-for optional in ("gs_usb", "usb"):
+# jeepney: Bluetooth ELM327 emulation through BlueZ (Linux)
+for optional in ("gs_usb", "usb", "jeepney"):
     try:
         __import__(optional)
         hidden += collect_submodules(optional)

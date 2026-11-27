@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 
 from .controller import SimController
 from .driver import DriverPanel
+from .elm_panel import ElmPanel
 from .gauges import Cluster
 from .panels import (
     CanPanel,
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow):
         self.diag = DiagnosticsPanel(ctl)
         self.monitors = MonitorsPanel(ctl)
         self.faults = FaultsPanel(ctl)
+        self.elm = ElmPanel(ctl)
         self.tabs = QTabWidget()
         self.tabs.addTab(self.live, "Live data")
         self.tabs.addTab(self.charts, "Charts")
@@ -94,6 +96,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.diag, "Diagnostics")
         self.tabs.addTab(self.monitors, "Monitors")
         self.tabs.addTab(self.can, "CAN")
+        self.tabs.addTab(self.elm, "ELM327")
         self.tabs.addTab(self.env, "Environment")
         self.tabs.addTab(self.vinfo, "Vehicle info")
 
@@ -249,6 +252,8 @@ class MainWindow(QMainWindow):
                 self.charts.refresh()
             elif current is self.can:
                 self.can.refresh()
+            elif current is self.elm:
+                self.elm.refresh()
             elif current is self.env:
                 self.env.refresh()
             elif current is self.diag:
