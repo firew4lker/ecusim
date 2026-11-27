@@ -65,7 +65,7 @@ class Pedal(QWidget):
         self.value = 0.0
         self.hold = False
         self._dragging = False
-        self.setMinimumSize(56, 170)
+        self.setMinimumSize(56, 110)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         self.setToolTip(f"{name}: drag down to press. Right-click toggles hold.")
 
@@ -134,7 +134,7 @@ class Shifter(QWidget):
         super().__init__(parent)
         self.gear = 0
         self.refused = False
-        self.setMinimumSize(200, 140)
+        self.setMinimumSize(200, 110)
         self.setToolTip("Click a gear (keyboard: 1-5, R, N). Needs the clutch pressed.")
 
     def _pos(self, gear: int) -> QPointF:
@@ -221,6 +221,7 @@ class DriverPanel(QWidget):
         hl.addWidget(self.hand, 1)
         hl.addWidget(self.hand_lbl)
         hl.addWidget(self.hand_zero)
+        pv.addSpacing(6)  # keep the pedal percentages clear of the hand-throttle row
         pv.addLayout(hl)
 
         gear_box = QGroupBox("Gearbox")

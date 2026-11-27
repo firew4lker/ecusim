@@ -55,7 +55,7 @@ class DialGauge(QWidget):
         self.digital = digital
         self.value = vmin
         self._shown = vmin
-        self.setMinimumSize(200, 200)
+        self.setMinimumSize(150, 150)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def set_value(self, v: float) -> None:
@@ -255,7 +255,7 @@ class InfoDisplay(QWidget):
         self.ambient = 15.0
         self.message = ""
         self.message_color = AMBER
-        self.setMinimumSize(170, 120)
+        self.setMinimumSize(150, 100)
 
     def paintEvent(self, _ev) -> None:  # noqa: N802
         p = QPainter(self)

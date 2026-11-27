@@ -12,7 +12,9 @@ from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
     QLineEdit,
+    QFrame,
     QMainWindow,
+    QScrollArea,
     QSplitter,
     QTabWidget,
     QVBoxLayout,
@@ -58,12 +60,24 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ctl = ctl
         self.setWindowTitle("ECU Simulator — 1.6 DOHC")
-        self.resize(1400, 900)
+        # Open at a size that fits the screen (1366x768 laptops, 125-150 % display scaling)
+        screen = QApplication.primaryScreen()
+        avail = screen.availableGeometry() if screen else None
+        width = min(1400, int(avail.width() * 0.95)) if avail else 1400
+        height = min(900, int(avail.height() * 0.92)) if avail else 900
+        self.resize(width, height)
 
         self.cluster = Cluster()
-        self.cluster.setMinimumHeight(300)
+        self.cluster.setMinimumHeight(220)
         self.driver = DriverPanel()
-        self.driver.setMaximumWidth(340)
+        # Driver controls scroll instead of being squeezed (and drawn on top of each other) on small screens
+        self.driver_scroll = QScrollArea()
+        self.driver_scroll.setWidget(self.driver)
+        self.driver_scroll.setWidgetResizable(True)
+        self.driver_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.driver_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.driver_scroll.setMinimumWidth(self.driver.minimumSizeHint().width() + 18)
+        self.driver_scroll.setMaximumWidth(360)
         self.live = LiveDataPanel(ctl)
         self.charts = ChartsPanel(ctl)
         self.can = CanPanel(ctl)
@@ -83,13 +97,13 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.vinfo, "Vehicle info")
 
         lower = QSplitter()
-        lower.addWidget(self.driver)
+        lower.addWidget(self.driver_scroll)
         lower.addWidget(self.tabs)
         lower.setStretchFactor(1, 1)
         vsplit = QSplitter(Qt.Orientation.Vertical)
         vsplit.addWidget(self.cluster)
         vsplit.addWidget(lower)
-        vsplit.setSizes([330, 570])
+        vsplit.setSizes([int(height * 0.36), int(height * 0.64)])
         central = QWidget()
         lay = QVBoxLayout(central)
         lay.setContentsMargins(4, 4, 4, 4)
