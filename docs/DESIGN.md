@@ -538,6 +538,91 @@ Warm idle fuel rate ≈ 0.85 L/h.
 - **02:** frame 0 only. PID 02 returns the DTC that caused the freeze frame.
 - **06:** see 6.4.
 
+### 7.7 ELM327 adapter emulation (planned, M7)
+
+**Goal:** diagnostic software that expects an ELM327 adapter (USB, Bluetooth or Wi-Fi) can connect to ecusim
+with **no CAN hardware**. ecusim pretends to be the adapter *and* the car:
+
+```
+diagnostic app ──ASCII──▶ transport (TCP / pty / COM / Bluetooth) ──▶ ELM327 emulator ──▶ ObdServer.handle()
+               ◀─ASCII──                                           ◀── (formats replies) ◀──
+```
+
+The emulator runs **inside ecusim** and calls the same `ObdServer` as the CAN side, so every mode, PID, DTC,
+freeze frame and Mode 06 result is identical. CAN and ELM327 can be on at the same time.
+
+#### 7.7.1 Transports: each one switched on or off separately
+Every transport is **off by default**. Each one is a separate emulated adapter with its own AT settings (echo,
+headers, …), like plugging in several real adapters. Each one accepts **one client at a time**, as a real adapter
+does. A second client is refused, with the reason shown in the UI.
+
+| Transport | OS | How the app connects | Settings |
+|---|---|---|---|
+| **TCP ("Wi-Fi ELM327")** | all | Apps with a Wi-Fi adapter option (Torque, Car Scanner, OBD Auto Doctor), python-OBD with `socket://host:port` | Port (default **35000**). **Listen on:** this computer only (`127.0.0.1`, default) or the network (`0.0.0.0`, for phones on the classroom Wi-Fi). When on the network, the UI shows the IP address to type into the phone. |
+| **Virtual serial port (pty)** | Linux, macOS | Any program that opens a serial port, including Windows tools under Wine (`~/.wine/dosdevices/comN` symlink) | Link name (default `/dev/ttyELM327` if writable, otherwise `~/.local/share/ecusim/ttyELM327`). The link is removed when the transport is switched off. |
+| **Existing serial port** | all | **Windows:** a com0com virtual cable pair (ecusim opens COM11, the app opens COM10). Also a real USB-serial null-modem cable to a second PC running the scan software. | Port, baud rate (default 38400) |
+| **Bluetooth (SPP)** | Linux; Windows via a COM port | Android apps that pair with "OBDII" Bluetooth adapters | **Linux:** ecusim registers a Serial Port Profile with BlueZ over D-Bus and appears as an adapter named (default) `OBDII`. Pairing is done by the user in the OS Bluetooth settings. Needs an optional D-Bus package; the option is greyed out with the reason if it's missing. **Windows:** create an *incoming* COM port in Windows Bluetooth settings, then use **Existing serial port**. **macOS:** not supported. |
+
+Notes:
+- **iPhone/iPad** apps don't use classic Bluetooth serial; they use Wi-Fi (TCP transport) or BLE. BLE adapter
+  emulation is out of scope (see §14).
+- Ports that can't be opened (in use, no permission, missing driver) are reported in the UI and leave the other
+  transports running.
+
+#### 7.7.2 User controls
+- **UI:** a new **ELM327** tab. One row per transport with an **On/Off switch**, its settings, a status
+  (`off` / `waiting for app` / `connected: 192.168.1.23` / error text) and request/response counters.
+  Emulator options are shared by all transports: identity string, default protocol, response latency.
+- **Trace:** ELM327 traffic appears in the **CAN** tab trace, tagged `ELM`, both as the ASCII exchange and as
+  the CAN frames a real adapter would have put on the bus. Students still see ISO-TP, without a CAN adapter.
+- **Command line:** `--elm-tcp [HOST:]PORT`, `--elm-pty [PATH]`, `--elm-serial PORT[@BAUD]`, `--elm-bt [NAME]`.
+  Any of them switches that transport on for that session. The same flags work in `headless` mode.
+- **Persistence:** which transports are on and their settings are saved in `config.json`, so a classroom PC
+  starts with them ready. A `--no-elm` flag starts with all of them off.
+
+#### 7.7.3 What the emulator implements
+Copy an ELM327 **v1.5** (the version clones report and most apps expect). The identity string can be changed,
+because some apps look for v2.1.
+
+- **Reset/identity:** `ATZ`, `ATWS`, `ATD`, `ATI`, `AT@1`, `ATRV` (battery voltage from the simulation, so it
+  rises to ~14.2 V when the engine runs).
+- **Formatting:** `ATE0/1` echo, `ATL0/1` line feeds, `ATS0/1` spaces, `ATH0/1` headers, `ATCAF0/1` automatic
+  formatting, `ATD0/1` show DLC, `ATR0/1` responses.
+- **Protocol:** `ATSP n`, `ATTP n`, `ATDP`, `ATDPN`. Protocol 0 (auto) "searches" on the first request
+  (`SEARCHING...`), then settles on **6** (11-bit, 500k) or **7** (29-bit, 500k), whichever ecusim's CAN
+  settings say. Protocols 8/9 (250k) are answered when ecusim is set to 250 kbit/s. Other protocols (J1850,
+  ISO 9141, KWP) → `UNABLE TO CONNECT`.
+- **Addressing:** `ATSH` (functional `7DF` or physical `7E0`; the server's functional/physical rules apply),
+  `ATCRA`, `ATCF`/`ATCM`. An unknown header gets `NO DATA`.
+- **Timing:** `ATST`, `ATAT0/1/2`; a request ending with a response count (`010C1`) returns after that many
+  replies, which fast apps rely on.
+- **Replies:** single and multi-frame (headers off: `014` / `0: 49 02 01 …` / `1: …`; headers on: one line per
+  CAN frame), negative responses (`7F 01 12`), `NO DATA` (unsupported PID on a functional request, or key off),
+  `?` for unknown commands, `STOPPED` when the app sends a character while a request is running, the `>`
+  prompt after every reply.
+- **Not implemented:** `ATMA`/`ATMR`/`ATMT` bus monitoring (answered `?`), STN/OBDLink `ST…` commands,
+  programmable parameters (`ATPP`), J1939. Apps that require them (FORScan, OBDLink app) are out of scope.
+
+#### 7.7.4 Realism options
+- **Response latency:** per-request delay, default 40 ms (a real ELM327 over USB), 0 for fast testing.
+- **Serial speed:** on serial transports, replies are paced at the configured baud rate, so long multi-frame
+  answers take as long as on a real adapter.
+- **Key off:** the "car" stops answering (`NO DATA` / `UNABLE TO CONNECT`) but the adapter still does: `ATRV`
+  still reads the battery voltage, like an adapter powered from the OBD socket.
+
+#### 7.7.5 Code structure
+- `ecusim/elm/emulator.py`: pure state machine, **no I/O**: text in, text out, with a clock passed in. Uses
+  the existing ISO-TP code to produce the CAN frames for headers-on output and the trace.
+- `ecusim/elm/transports.py`: TCP, pty, serial and Bluetooth transports, one thread each, each feeding its own
+  emulator instance.
+- `ecusim/ui/panels.py`: the ELM327 tab. `ecusim/cli.py` and `ecusim/ui/app.py`: the flags.
+
+#### 7.7.6 Tests
+- Unit tests of the state machine against recorded real-ELM327 transcripts (init sequences of python-OBD,
+  Torque and ScanMaster; every formatting combination; multi-frame VIN; negative responses; `STOPPED`).
+- python-OBD end-to-end over TCP and pty (`obd.OBD("socket://127.0.0.1:35000")`, `obd.OBD("/dev/ttyELM327")`).
+- Manual: Torque / Car Scanner on Android over Wi-Fi and Bluetooth; ScanMaster-ELM on Windows through com0com.
+
 ---
 
 ## 8. Fault injection
@@ -660,7 +745,7 @@ One-click setups combining environment, faults and actions:
 ## 10. Persistence
 | File | Contents | Survives |
 |---|---|---|
-| `config.json` | CAN settings, UI layout, vehicle info, region | Everything |
+| `config.json` | CAN settings, ELM327 transports and their settings, UI layout, vehicle info, region | Everything |
 | `kam.json` (keep-alive memory) | LTFT cells, idle-air learn, purge learn, knock adaptives, DTCs (confirmed, pending, history), freeze frame, monitor status, counters, in-use performance counters, odometer | Key off. Wiped by Battery disconnect. |
 | `nvm.json` | Permanent DTCs, VIN, CALID/CVN | Battery disconnect |
 | `presets/*.json` | Scenario presets | |
@@ -750,6 +835,7 @@ ecu/
 | M4 | Diagnostics: DTC manager, monitors, freeze frame, Mode 02/03/04/06/07/0A, persistence | Two-trip logic and Mode 04 scenarios pass |
 | M5 | Fault catalogue + presets, EVAP, catalyst and O2 monitors, drive-cycle helper | All fault scenario tests pass |
 | M6 | Hardware validation on Linux, Windows and macOS with CANable and PCAN; packaging | Real scan tools work on all 3 OSes |
+| M7 | ELM327 adapter emulation (§7.7): TCP, pty, serial, Bluetooth, each switchable | python-OBD works over TCP and pty; an Android app works over Wi-Fi and Bluetooth; a Windows app works through com0com |
 
 ---
 
@@ -759,3 +845,4 @@ ecu/
 - Automatic gearbox variant.
 - Replaying recorded real-car logs to tune the calibration tables.
 - Gamepad, wheel and pedal input.
+- BLE (Bluetooth Low Energy) ELM327 emulation, for iPhone apps that only support BLE adapters.
