@@ -170,6 +170,7 @@ def test_persistence_roundtrip_and_battery_disconnect(tmp_path):
     assert dtc.confirmed == ["P0303"] and dtc.permanent == ["P0303"] and dtc.freeze_frame.code == "P0303"
     assert 75.0 < restored.plant.thermal.coolant_c < 90.0  # cooled for 10 minutes
     assert restored.plant.vehicle.odometer_m == pytest.approx(rig.sim.plant.vehicle.odometer_m)
+    assert restored.plant.vehicle.trip_m == pytest.approx(rig.sim.plant.vehicle.trip_m)
 
     later = StateStore.build_sim(k2, n2, now=kam["saved_at"] + 24 * 3600.0)
     assert later.plant.thermal.coolant_c == pytest.approx(20.0, abs=0.5)

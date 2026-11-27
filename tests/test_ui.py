@@ -116,6 +116,22 @@ def test_controller_resets_keep_odometer_and_trims(app):
         ctl.shutdown()
 
 
+def test_trip_and_odometer_reset(app, win):
+    ctl = win.ctl
+    ctl.runner.submit(lambda s: (setattr(s.plant.vehicle, "odometer_m", 12345.0),
+                                 setattr(s.plant.vehicle, "trip_m", 678.0)))
+    pump(app, 0.1)
+    ctl.warm_restart()  # the trip survives a key cycle, like the odometer
+    pump(app, 0.2)
+    assert ctl.current_sim.plant.vehicle.trip_m == pytest.approx(678.0, abs=1.0)
+    info = win.cluster.info
+    QTest.mouseClick(info, Qt.MouseButton.LeftButton, pos=info.rect().center())
+    assert wait_for(app, lambda: ctl.current_sim.plant.vehicle.trip_m == 0.0, 1.0)
+    assert ctl.current_sim.plant.vehicle.odometer_m == pytest.approx(12345.0, abs=1.0)
+    ctl.reset_odometer()
+    assert wait_for(app, lambda: ctl.current_sim.plant.vehicle.odometer_m == 0.0, 1.0)
+
+
 def test_hand_throttle_holds_gas(app, win):
     ctl = win.ctl
     sim_pedal = lambda: ctl.call(lambda s: s.driver.pedal)  # noqa: E731

@@ -50,7 +50,7 @@ To drive it for the first time:
 2. Press and **hold START** (or hold the **K** key) until the engine runs, about one second, then let go.
 3. Watch the rev counter flare and settle to idle.
 
-What the car has learned and stored (fuel trims, trouble codes, readiness, odometer) is kept when you close the
+What the car has learned and stored (fuel trims, trouble codes, readiness, odometer and trip) is kept when you close the
 program, the way a real car's ECU keeps it with the battery connected. It is stored in `~/.local/share/ecusim`
 (Windows: `%APPDATA%\ecusim`). Start with `--no-state` for a clean car that forgets everything on exit.
 
@@ -72,7 +72,7 @@ program, the way a real car's ECU keeps it with the battery connected. It is sto
 
 | Area | What it is |
 |---|---|
-| **Instrument cluster** (top) | Rev counter, speedometer, coolant and fuel gauges, gear, odometer and trip, outside temperature, and warning lamps. |
+| **Instrument cluster** (top) | Rev counter, speedometer, coolant and fuel gauges, gear, odometer and trip, outside temperature, and warning lamps. Click the centre display to reset the trip. |
 | **Driver controls** (left) | Ignition key, clutch, brake and gas pedals, hand throttle, gear lever and switches. |
 | **Tabs** (right) | Live data, Charts, Faults, Diagnostics, Monitors, CAN, Environment and Vehicle info. |
 | **Status bar** (bottom) | ECU state (off, key on, cranking, running), fuel system status, simulated time, CAN connection. |
@@ -169,6 +169,9 @@ follow a request and its multi-frame answer.
 **Environment.** Outside temperature, air pressure (altitude), road grade, fuel level and time acceleration.
 **Cold soak (overnight at ambient)** and **Hot soak (stopped a few minutes ago)** reset the engine temperatures.
 Both keep the odometer, the fuel and the learned trims.
+**Reset trip** sets the trip to 0 (so does clicking the centre display of the cluster). **Reset odometer…** sets
+the odometer and the trip to 0 after asking. Neither touches the ECU's own OBD counters (distance since codes
+cleared, distance with the MIL on): those reset with *Diagnostics → Clear codes*, as in a real car.
 
 ![Environment tab](images/environment_tab.png)
 

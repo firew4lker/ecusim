@@ -55,7 +55,7 @@ def capture(sim: Simulator, info: VehicleInfo) -> tuple[dict, dict]:
         "version": VERSION,
         "saved_at": time.time(),
         "ecu": sim.ecu.export_kam(),
-        "vehicle": {"odometer_m": p.vehicle.odometer_m, "fuel_l": p.fuel_l},
+        "vehicle": {"odometer_m": p.vehicle.odometer_m, "trip_m": p.vehicle.trip_m, "fuel_l": p.fuel_l},
         "thermal": {
             "ambient_c": sim.env.ambient_c,
             "baro_kpa": sim.env.baro_kpa,
@@ -124,6 +124,7 @@ class StateStore:
                 sim.readings = sim.sensors.update(sim.dt, sim.plant, sim.ecu.act, sim.driver)
             veh = kam.get("vehicle", {})
             sim.plant.vehicle.odometer_m = float(veh.get("odometer_m", 0.0))
+            sim.plant.vehicle.trip_m = float(veh.get("trip_m", 0.0))
             sim.plant.fuel_l = float(veh.get("fuel_l", sim.plant.fuel_l))
             sim.ecu.import_kam(kam.get("ecu", {}))
         if nvm:

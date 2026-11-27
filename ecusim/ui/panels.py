@@ -449,10 +449,31 @@ class EnvironmentPanel(QWidget):
         rl = QVBoxLayout(resets)
         rl.addWidget(cold)
         rl.addWidget(warm)
+        trip = QPushButton("Reset trip")
+        trip.clicked.connect(ctl.reset_trip)
+        odo = QPushButton("Reset odometer…")
+        odo.clicked.connect(self._reset_odometer)
+        dist = QGroupBox("Distance (the trip also resets by clicking the cluster's centre display)")
+        dl = QHBoxLayout(dist)
+        dl.addWidget(trip)
+        dl.addWidget(odo)
+        dl.addStretch(1)
         lay = QVBoxLayout(self)
         lay.addWidget(box)
         lay.addWidget(resets)
+        lay.addWidget(dist)
         lay.addStretch(1)
+
+    def _reset_odometer(self) -> None:
+        from PySide6.QtWidgets import QMessageBox
+
+        ok = QMessageBox.question(
+            self, "Reset odometer",
+            "Set the odometer and the trip to 0 km?\n\nThe ECU's own counters (distance since codes cleared, "
+            "distance with the MIL on) are not affected: they reset with Clear codes, as in a real car.",
+        )
+        if ok == QMessageBox.StandardButton.Yes:
+            self.ctl.reset_odometer()
 
     def refresh(self) -> None:
         if not self.fuel.isSliderDown():

@@ -116,6 +116,18 @@ class SimController:
     def set_fuel_pct(self, pct: float) -> None:
         self.runner.submit(lambda s: setattr(s.plant, "fuel_l", s.plant.tank_l * pct / 100.0))
 
+    def reset_trip(self) -> None:
+        self.runner.submit(lambda s: setattr(s.plant.vehicle, "trip_m", 0.0))
+
+    def reset_odometer(self) -> None:
+        """Odometer and trip back to zero (as after fitting a new instrument cluster)."""
+
+        def apply(s: Simulator) -> None:
+            s.plant.vehicle.odometer_m = 0.0
+            s.plant.vehicle.trip_m = 0.0
+
+        self.runner.submit(apply)
+
     def set_time_scale(self, x: float) -> None:
         self.runner.time_scale = x
 
@@ -189,6 +201,7 @@ class SimController:
             new.faults.set(FaultSetting.from_dict(s.to_dict()))
         new.ecu.region = old.ecu.region
         new.plant.vehicle.odometer_m = old.plant.vehicle.odometer_m
+        new.plant.vehicle.trip_m = old.plant.vehicle.trip_m
         new.plant.fuel_l = old.plant.fuel_l
         old.driver.key = "off"
         old.ecu.step(old.dt, old.readings, "off")  # end the drive cycle properly

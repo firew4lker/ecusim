@@ -69,6 +69,7 @@ class MainWindow(QMainWindow):
 
         self.cluster = Cluster()
         self.cluster.setMinimumHeight(220)
+        self.cluster.info.trip_reset_requested.connect(ctl.reset_trip)
         self.driver = DriverPanel()
         # Driver controls scroll instead of being squeezed (and drawn on top of each other) on small screens
         self.driver_scroll = QScrollArea()

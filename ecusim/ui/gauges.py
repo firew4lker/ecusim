@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import math
 
-from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtCore import QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPainterPath, QPen, QRadialGradient
 from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
@@ -245,10 +245,14 @@ class Lamp(QWidget):
 
 
 class InfoDisplay(QWidget):
-    """Centre display: gear, odometer, trip, outside temperature, messages."""
+    """Centre display: gear, odometer, trip, outside temperature, messages. Clicking it resets the trip."""
+
+    trip_reset_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setToolTip("Click to reset the trip")
         self.gear = "N"
         self.odometer = 0.0
         self.trip = 0.0
@@ -256,6 +260,11 @@ class InfoDisplay(QWidget):
         self.message = ""
         self.message_color = AMBER
         self.setMinimumSize(150, 100)
+
+    def mouseReleaseEvent(self, ev) -> None:  # noqa: N802
+        if ev.button() == Qt.MouseButton.LeftButton and self.rect().contains(ev.position().toPoint()):
+            self.trip_reset_requested.emit()
+        super().mouseReleaseEvent(ev)
 
     def paintEvent(self, _ev) -> None:  # noqa: N802
         p = QPainter(self)
