@@ -55,6 +55,8 @@ def setup_commands(name: str, target: Path | str) -> tuple[str, str]:
     """(commands that create the permanent /dev name, commands that remove it)."""
     if not valid_name(name):
         raise ValueError(f"not a valid device name: {name!r}")
+    if str(target).startswith("/dev/"):
+        raise ValueError(f"the /dev name must point at ecusim's own link, not into /dev: {target}")
     rule_file = RULE_FILE.format(name=name)
     dev = f"/dev/{name}"
     if shutil.which("systemd-tmpfiles"):

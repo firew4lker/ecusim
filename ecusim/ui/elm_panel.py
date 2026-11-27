@@ -89,9 +89,6 @@ class ElmPanel(QWidget):
         self.tcp_net = QCheckBox("Allow phones and other computers to connect")
         self.tcp_net.setChecked(bool(s["tcp"]["network"]))
         self.tcp_net.setToolTip("Off: only programs on this computer can connect (127.0.0.1).")
-        self.pty_link = QLineEdit(s["pty"]["link"])
-        self.pty_link.setPlaceholderText(str(default_pty_link()))
-        self.pty_link.setToolTip("ecusim's own link to the port. Leave empty for the default.")
         self.dev_name = QLineEdit(s["pty"]["dev_name"])
         self.dev_name.setPlaceholderText(devlink.DEFAULT_NAME)
         self.dev_name.setToolTip("The name programs see in /dev. Some programs only list names such as "
@@ -121,12 +118,12 @@ class ElmPanel(QWidget):
         ser_row.addWidget(self.ser_refresh)
         rows = {
             "tcp": [("Port", self.tcp_port), ("", self.tcp_net)],
-            "pty": [("Link", self.pty_link)] + ([] if devlink.supported() else
+            "pty": ([] if devlink.supported() else
                     [("Name in /dev", self._row(self.dev_name, self.dev_setup)), ("", self.dev_state)]),
             "serial": [("Port", ser_row), ("Baud rate", self.ser_baud)],
             "bt": [("Name", self.bt_name), ("", self.bt_rename)],
         }
-        self.fields = {"tcp": [self.tcp_port, self.tcp_net], "pty": [self.pty_link, self.dev_name],
+        self.fields = {"tcp": [self.tcp_port, self.tcp_net], "pty": [self.dev_name],
                        "serial": [self.ser_port, self.ser_refresh, self.ser_baud],
                        "bt": [self.bt_name, self.bt_rename]}
 
@@ -200,7 +197,7 @@ class ElmPanel(QWidget):
         t = self.mgr.transports.get("pty")
         if t is not None and t.running:
             return t.link
-        link = self.pty_link.text().strip()
+        link = self.mgr.settings["pty"]["link"]  # ecusim's own link: only changeable with --elm-pty PATH
         from pathlib import Path
 
         return Path(link) if link else default_pty_link()
@@ -284,7 +281,7 @@ class ElmPanel(QWidget):
         if kind == "tcp":
             return {"port": self.tcp_port.value(), "network": self.tcp_net.isChecked()}
         if kind == "pty":
-            return {"link": self.pty_link.text().strip(), "dev_name": self._dev_name()}
+            return {"dev_name": self._dev_name()}
         if kind == "serial":
             baud = self.ser_baud.currentText().strip()
             return {"port": self.ser_port.currentText().strip(), "baud": int(baud) if baud.isdigit() else 38400}

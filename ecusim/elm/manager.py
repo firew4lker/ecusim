@@ -53,6 +53,8 @@ class ElmManager:
         self.settings = copy.deepcopy(DEFAULTS)
         self._saved = self._load()
         self._merge(self.settings, self._saved)
+        if str(self.settings["pty"]["link"]).startswith("/dev/"):
+            self.settings["pty"]["link"] = ""  # only root can write there; older versions allowed it
         self.session_only: set[str] = set()  # enabled/disabled from the command line, not saved
         self.transports: dict[str, Transport] = {}
         self.trace: deque[TraceEntry] = deque(maxlen=trace_len)

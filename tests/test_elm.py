@@ -425,3 +425,18 @@ def test_startup_hint_offers_setup(car, tmp_path, monkeypatch):
         assert "programs can open /dev/ttyTEST-ecusim-not-there" in mgr.status("pty")
     finally:
         mgr.stop_all()
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="no pseudo-terminals on Windows")
+def test_pty_link_inside_dev_is_refused(car, tmp_path):
+    from ecusim.elm import devlink
+
+    cfg = tmp_path / "config.json"
+    cfg.write_text(json.dumps({"elm": {"pty": {"link": "/dev/ttyelm327"}}}))
+    assert ElmManager(car.link(), cfg).settings["pty"]["link"] == ""  # bad saved value from an older version
+    mgr = ElmManager(car.link())
+    mgr.update("pty", link="/dev/ttyelm327")
+    with pytest.raises(PermissionError, match="one-time setup"):
+        mgr.set_enabled("pty", True)
+    with pytest.raises(ValueError):
+        devlink.setup_commands("ttyELM327", "/dev/ttyelm327")

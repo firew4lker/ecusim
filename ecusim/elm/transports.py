@@ -282,7 +282,12 @@ class PtyTransport(Transport):
         self._master, self._slave = os.openpty()
         tty.setraw(self._slave)  # no echo, no CR/LF translation: the app sees bytes as sent
         self.device = os.ttyname(self._slave)
+        if str(self.link).startswith("/dev/"):
+            raise PermissionError(f"{self.link}: ecusim cannot create names in /dev. Leave its own link at the "
+                                  "default and use the one-time setup to get a /dev name.")
         self.link.parent.mkdir(parents=True, exist_ok=True)
+        if not os.access(self.link.parent, os.W_OK):
+            raise PermissionError(f"{self.link}: no permission to create it in {self.link.parent}")
         if self.link.is_symlink():
             self.link.unlink()  # stale link from an earlier run
         elif self.link.exists():
