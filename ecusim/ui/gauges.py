@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Instrument cluster widgets, painted with QPainter (DESIGN §9.3)."""
 
 from __future__ import annotations

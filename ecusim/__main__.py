@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Headless ECU simulator on a CAN bus, with a small command console (the Qt UI arrives in M3).
 
     python -m ecusim --interface socketcan --channel vcan0

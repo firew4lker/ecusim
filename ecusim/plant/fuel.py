@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Fuel delivery: pump/rail, injectors, port wall-wetting (x-tau), vaporisation (DESIGN §4.2)."""
 
 from __future__ import annotations

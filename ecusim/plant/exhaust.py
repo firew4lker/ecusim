@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Exhaust: transport delay, gas temperature, manifold, catalyst thermal + oxygen storage (DESIGN §4.6)."""
 
 from __future__ import annotations

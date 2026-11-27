@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Generate the icon files used for packaging from ecusim/ui/icon.py:
 
     packaging/linux/ecusim.svg      Linux desktop entry (Arch package)

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """J1979 encodings and request rules (DESIGN §7.3-7.5)."""
 
 import pytest

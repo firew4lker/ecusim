@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Combustion torque, friction, pumping, starter and crankshaft rotation (DESIGN §4.3, §4.4)."""
 
 from __future__ import annotations

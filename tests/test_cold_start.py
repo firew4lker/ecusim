@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Cold start at 15 °C and idle warm-up (DESIGN §12.1)."""
 
 import statistics

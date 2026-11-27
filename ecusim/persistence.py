@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Keep-alive memory (KAM) and non-volatile memory (NVM) on disk (DESIGN §10).
 
 kam.json: adaptives, DTCs, freeze frame, monitors, Mode 06, counters, odometer, fuel, temperatures.

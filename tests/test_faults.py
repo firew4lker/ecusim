@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Fault injection mechanics, failsafes and immediate circuit diagnostics (M5)."""
 
 import math

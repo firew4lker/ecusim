@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """SAE J1979 Mode 01 PID registry: encoders (ECU side) and decoders (tester side) (DESIGN §7.4).
 
 Encoders take the diagnostic snapshot dict built by ``ecusim.obd.datasource``.

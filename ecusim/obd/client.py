@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Minimal OBD-II tester (scan-tool side) over python-can, for testing and the bench tester tool."""
 
 from __future__ import annotations

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Run a headless scenario, write a CSV of every signal and a multi-panel PNG plot.
 
 Examples:

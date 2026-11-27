@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """ECU calibration (DESIGN §5). Values a calibration engineer would have mapped on the dyno."""
 
 from __future__ import annotations

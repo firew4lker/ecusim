@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """DTC lifecycle (DESIGN §6.1): pending -> confirmed on the 2nd consecutive failing trip, MIL,
 permanent DTCs, MIL off after 3 good trips, erase after 40 warm-ups, Mode 04 clear."""
 

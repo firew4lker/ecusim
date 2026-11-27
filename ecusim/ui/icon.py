@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Application icon (single source for the window icon, the Linux .svg, the Windows .ico and macOS .icns).
 
 Regenerate the packaging files with:  python tools/make_icons.py

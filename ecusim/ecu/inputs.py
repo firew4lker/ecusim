@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """ECU input processing: circuit range checks, plausibility, debouncing, failsafe substitution
 (DESIGN §6.3 comprehensive components, §5.1 limp home).
 

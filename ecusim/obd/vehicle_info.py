@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Mode 09 vehicle information: VIN (with check digit), calibration ID, CVN, ECU name (DESIGN §7.5)."""
 
 from __future__ import annotations

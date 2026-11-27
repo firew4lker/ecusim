@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """CAN side of the ECU: python-can bus, ISO 15765-4 addressing, ISO-TP, response scheduling (DESIGN §7.1).
 
 Supported python-can interfaces include socketcan (Linux, incl. vcan), slcan, pcan, kvaser,

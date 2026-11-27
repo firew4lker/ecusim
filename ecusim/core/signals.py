@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Data passed between the driver, the plant, the sensors and the ECU."""
 
 from __future__ import annotations

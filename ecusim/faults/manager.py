@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Active-fault bookkeeping: enable/disable, severity, sensor mode, intermittency (DESIGN §8)."""
 
 from __future__ import annotations

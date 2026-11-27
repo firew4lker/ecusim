@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """End to end over a python-can virtual bus: simulator thread + ECU CAN server + tester client."""
 
 import uuid

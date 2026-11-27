@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Scripted driver for headless tests and demos: smooth pedal ramps, gear changes, speed hold."""
 
 from __future__ import annotations

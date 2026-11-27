@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Minimal generic OBD-II tester for the bench (or against the simulator without hardware).
 
     ecusim tester                                            # udp_multicast, summary

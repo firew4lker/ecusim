@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Engine control module: operating modes and glue between the sub-controllers (DESIGN §5)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Sensor layer: converts the plant's true state into what each sensor reports (DESIGN §3.1).
 
 Each sensor has its own dynamics, tolerance and noise. Faults are applied here (signal faults in

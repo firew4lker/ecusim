@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Intake air path: air filter, electronic throttle, intake manifold, cylinder filling (DESIGN §4.1)."""
 
 from __future__ import annotations

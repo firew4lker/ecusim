@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Minimal generic OBD-II tester. Thin wrapper around ``ecusim.tester_cli``; see ``--help``."""
 
 import sys

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """ISO 15765-2 segmentation, flow control and reassembly."""
 
 import pytest

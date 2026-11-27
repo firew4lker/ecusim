@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Real-time runner: steps the simulator on its own thread at wall-clock pace (optionally accelerated),
 publishes diagnostic snapshots for the CAN thread, and applies commands from other threads."""
 

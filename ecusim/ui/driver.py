@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Driver controls: key switch, pedals, H-pattern shifter, switches (DESIGN §9.2)."""
 
 from __future__ import annotations

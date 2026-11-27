@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 import pytest
 
 from ecusim.core.tables import Table1D, Table2D, clamp, interp1

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Regenerate the screenshots used by docs/USAGE.md (runs the real window offscreen).
 
     QT_QPA_PLATFORM=offscreen .venv/bin/python tools/make_doc_screenshots.py

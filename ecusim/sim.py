@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Simulation loop: driver -> sensors -> ECU -> plant, at a fixed 10 ms step (DESIGN §3.2)."""
 
 from __future__ import annotations

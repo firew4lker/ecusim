@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Run every fault (and every sensor failure mode) through a standard drive cycle in parallel and
 print which DTCs the ECU set, next to what the catalogue expects. Takes ~2.5 minutes on 8 cores.
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Evaporative emission system: tank vapour space, carbon canister, purge and vent valves, leaks (DESIGN §4.7)."""
 
 from __future__ import annotations

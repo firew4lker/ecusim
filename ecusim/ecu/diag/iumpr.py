@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """In-use monitor performance ratio counters (Mode 09 PID 08, spark ignition)."""
 
 from __future__ import annotations

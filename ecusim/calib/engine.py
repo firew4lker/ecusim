@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Physical description of the simulated engine (the *plant*), see docs/DESIGN.md §2 and §4.
 
 These numbers describe the real hardware. The ECU has its own calibration in

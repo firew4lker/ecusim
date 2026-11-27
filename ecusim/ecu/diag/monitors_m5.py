@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Non-continuous monitors (DESIGN §6.2): catalyst, O2 sensors, O2 heaters, EVAP leak test, VVT.
 
 Each runs at most once per drive cycle once its enable conditions are met, reports DTC results,

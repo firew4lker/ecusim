@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Entry point of the packaged (PyInstaller) binary; the logic lives in ecusim.cli."""
 
 import sys

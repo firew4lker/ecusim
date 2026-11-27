@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Electronic throttle: driver demand, idle-speed control, dashpot, cranking position (DESIGN §5.2-5.3)."""
 
 from __future__ import annotations

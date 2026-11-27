@@ -14,7 +14,8 @@ real CAN bus, so any scan tool can read it like a car.
 - **About 50 injectable faults** (vacuum leaks, misfires, worn catalyst, sensor circuits, EVAP leaks, ...)
   that the simulated ECU has to detect by itself, with one-click classroom scenarios.
 
-**User guide with teaching scenarios: [docs/USAGE.md](docs/USAGE.md)** · Design: [docs/DESIGN.md](docs/DESIGN.md)
+**User guide with teaching scenarios: [docs/USAGE.md](docs/USAGE.md)** · Design: [docs/DESIGN.md](docs/DESIGN.md) ·
+Licence: [GPL-3.0-or-later](#licence)
 
 ## Setup
 
@@ -159,3 +160,18 @@ QT_QPA_PLATFORM=offscreen .venv/bin/python tools/make_doc_screenshots.py   # reg
 python3 tools/run_scenario.py cold-start --ambient 15   # CSV + PNG in out/
 .venv/bin/python -m pytest -q
 ```
+
+## Licence
+
+ECU Simulator — Copyright (C) 2026 firewalker
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+[LICENSE](LICENSE) file for details.
+
+It uses Qt for Python (PySide6, LGPL-3.0), python-can (LGPL-3.0), pyqtgraph (MIT), NumPy (BSD), msgpack
+(Apache-2.0) and pyserial (BSD), all compatible with the GPL-3.0. The standalone binaries bundle these
+libraries, including Qt; their source code is available from their projects (for Qt:
+https://download.qt.io and https://code.qt.io).

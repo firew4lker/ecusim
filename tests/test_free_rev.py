@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Warm free-rev: rev limiter, decel fuel cut, return to idle (DESIGN §5.4)."""
 
 import pytest

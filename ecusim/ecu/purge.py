@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """EVAP canister purge control with vapour-concentration learning (DESIGN §5.4 purge learning)."""
 
 from __future__ import annotations

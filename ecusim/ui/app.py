@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Desktop application entry point.
 
     python -m ecusim.ui                                   # UDP multicast CAN (no hardware)

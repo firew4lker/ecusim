@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Glue between the UI and the simulation: owns the simulator, real-time runner, OBD server, CAN link
 and the persisted ECU memory.
 

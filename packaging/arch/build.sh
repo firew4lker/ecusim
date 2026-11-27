@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Build the Arch Linux package from this source tree.
 #   ./build.sh          build ecusim-<ver>-<rel>-any.pkg.tar.zst
 #   ./build.sh -si      also install missing dependencies and the package (asks for sudo)

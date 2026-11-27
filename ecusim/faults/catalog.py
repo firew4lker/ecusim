@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Fault catalogue (DESIGN §8.1). Every fault acts on the plant or the sensor layer only."""
 
 from __future__ import annotations

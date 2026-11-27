@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Fuel control: lambda target, closed loop (STFT), adaptives (LTFT), DFCO, power enrichment,
 transient compensation and injector pulse width (DESIGN §5.4)."""
 

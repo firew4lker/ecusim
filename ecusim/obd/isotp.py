@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """ISO 15765-2 (ISO-TP) transport, transport-agnostic (DESIGN §7.2).
 
 ``IsoTpLink`` is a pure state machine: feed it received CAN payloads with :meth:`on_frame`

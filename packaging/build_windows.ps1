@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Build dist\ecusim.exe on Windows (PowerShell). Requires Python 3.11+ on PATH.
 #   powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1
 $ErrorActionPreference = "Stop"

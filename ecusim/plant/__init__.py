@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """The physical engine (true state). The ECU never reads this directly."""
 
 from __future__ import annotations

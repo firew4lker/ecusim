@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """DTC lifecycle rules in isolation (DESIGN §6.1)."""
 
 import pytest

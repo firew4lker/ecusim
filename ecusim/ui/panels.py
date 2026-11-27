@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Side panels: live data, charts, CAN, environment, vehicle info (DESIGN §9.4)."""
 
 from __future__ import annotations

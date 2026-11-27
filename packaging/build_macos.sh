@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Build dist/ecusim (command line) and "dist/ECU Simulator.app" on macOS.
 set -euo pipefail
 cd "$(dirname "$0")/.."

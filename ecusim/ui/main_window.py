@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Main window: cluster on top, driver controls on the left, tabs on the right (DESIGN §9.1)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Longitudinal vehicle and driveline: clutch (stick-slip), 5-speed gearbox, road load, brakes (DESIGN §4.9)."""
 
 from __future__ import annotations

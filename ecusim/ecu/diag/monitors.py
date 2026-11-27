@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Readiness monitors (DESIGN §6.2). M4: misfire, fuel system, comprehensive components.
 Catalyst, EVAP, O2 sensor, O2 heater and EGR/VVT monitors are declared (supported) and arrive in M5."""
 

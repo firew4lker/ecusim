@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """OBD-II request handling per SAE J1979 on ISO 15765-4 (DESIGN §7.3).
 
 Transport-independent: ``handle(request, functional)`` returns the response bytes, or ``None``

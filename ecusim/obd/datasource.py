@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Builds the diagnostic snapshot the OBD server answers from.
 
 Only ECU-visible values (sensor readings, ECU state) go in here - never plant truth.

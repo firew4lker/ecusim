@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Scenario presets (DESIGN §8.2): environment + engine state + faults in one click."""
 
 from __future__ import annotations

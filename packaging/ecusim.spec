@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # PyInstaller spec for the ECU simulator: one self-contained executable.
 # Build from the repository root:   pyinstaller packaging/ecusim.spec
 import os

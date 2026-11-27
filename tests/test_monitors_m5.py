@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Non-continuous monitors and fault -> DTC detection over realistic drive cycles (M5).
 
 The drive cycles are independent, so they run in a process pool to keep the suite fast.

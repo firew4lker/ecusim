@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """End-to-end diagnostics through the OBD services: two-trip logic, Mode 04, permanent DTCs,
 freeze frame, Mode 06, readiness, IUMPR, persistence (M4)."""
 

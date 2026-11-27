@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """On-board monitor test results for Mode 06 (DESIGN §6.4), stored as already-scaled raw integers."""
 
 from __future__ import annotations

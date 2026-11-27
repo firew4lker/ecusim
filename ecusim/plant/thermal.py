@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Coolant, oil, under-hood and intake air temperatures (DESIGN §4.5)."""
 
 from __future__ import annotations

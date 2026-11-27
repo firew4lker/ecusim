@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Bench tests on real CAN hardware (skipped unless enabled).
 
 Wire two adapters together (CAN-H to CAN-H, CAN-L to CAN-L, 120 Ω at each end), bring both up at

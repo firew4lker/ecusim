@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Sensor transfer functions: engineering value <-> signal voltage.
 
 Both the sensors (forward) and the ECU's input scaling (inverse) use these, the way a real

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Vehicle and driveline: drive away, shift, cruise, stall, interlocks (DESIGN §4.9, M3)."""
 
 import statistics

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Build the self-contained Linux binary dist/ecusim.
 # Uses a dedicated virtual environment (no system site-packages) so only runtime dependencies are bundled.
 set -euo pipefail

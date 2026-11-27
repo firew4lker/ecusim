@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Sensor fault modes (DESIGN §8): applied in the sensor layer so the ECU must detect them."""
 
 from __future__ import annotations

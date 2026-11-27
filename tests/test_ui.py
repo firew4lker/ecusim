@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """UI smoke tests (offscreen). Skipped when PySide6 is not installed."""
 
 import os

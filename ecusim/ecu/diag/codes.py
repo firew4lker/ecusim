@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """DTC catalogue (DESIGN §6.3) and SAE J2012 two-byte encoding."""
 
 from __future__ import annotations

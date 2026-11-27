@@ -8,7 +8,7 @@ pkgver=0.1.0
 pkgrel=1
 pkgdesc="Engine control unit simulator: 1.6 L petrol engine and 5-speed car, generic OBD-II over CAN, fault injection"
 arch=('any')
-license=('LicenseRef-unknown')
+license=('GPL-3.0-or-later')
 depends=(
   'python'
   'pyside6'
@@ -28,7 +28,7 @@ checkdepends=('python-pytest')
 optdepends=('can-utils: candump/cansend and the kernel ISO-TP tools for bench checks (AUR)')
 install=ecusim.install
 source=("$pkgname-$pkgver.tar.gz")
-sha256sums=('9a571bf5a46316e28bee3c3ea693f60786a537e34f45619ca65304e5df08fd73')
+sha256sums=('1a548158d9e9d4413dc141f6cb7327b40d1b948eb0f51ca9d01918ce917ad091')
 
 build() {
   cd "$pkgname-$pkgver"

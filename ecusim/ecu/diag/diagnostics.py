@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """On-board diagnostics executive: drive/warm-up cycles, monitors, DTCs, counters, readiness (DESIGN §6)."""
 
 from __future__ import annotations

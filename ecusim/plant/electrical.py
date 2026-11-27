@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Battery, alternator, starter current and electrical loads (DESIGN §4.8)."""
 
 from __future__ import annotations
