@@ -123,7 +123,7 @@ the **ELM327** tab, or for one session on the command line:
 
 ```bash
 .venv/bin/python -m ecusim.ui --elm-tcp 0.0.0.0:35000    # Wi-Fi adapter: phone apps on the network
-.venv/bin/python -m ecusim.ui --elm-pty                  # virtual serial port (Linux/macOS)
+.venv/bin/python -m ecusim.ui --elm-pty                  # virtual serial port; prints a one-time setup for /dev/ttyELM327
 .venv/bin/python -m ecusim.ui --elm-serial COM11         # Windows: one end of a com0com pair
 .venv/bin/python -m ecusim.ui --elm-bt                   # Bluetooth serial (Linux, BlueZ)
 .venv/bin/python -m ecusim --no-can --elm-tcp --start    # headless, adapter only

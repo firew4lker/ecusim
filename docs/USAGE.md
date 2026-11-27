@@ -209,11 +209,20 @@ until you switch them on, and the choice is remembered for next time.
 | Connection | Use it for | In the app |
 |---|---|---|
 | **Wi-Fi / TCP** | Phone apps (Torque, Car Scanner, OBD Auto Doctor, …) and python-OBD | Choose a **Wi-Fi** adapter, IP and port as shown on the tab (default port 35000). Tick *Allow phones and other computers to connect* first; the phone must be on the same network. |
-| **Virtual serial port** (Linux, macOS) | PC programs that open a serial port; Windows programs under Wine | Use the path shown, e.g. `/dev/ttyELM327`. Under Wine, link it to a COM port: `ln -s /dev/ttyELM327 ~/.wine/dosdevices/com5`. |
+| **Virtual serial port** (Linux, macOS) | PC programs that open a serial port; Windows programs under Wine | Linux: choose **/dev/ttyELM327** after the one-time setup below. Under Wine, link it to a COM port: `ln -s /dev/ttyELM327 ~/.wine/dosdevices/com5`. macOS: use the path shown on the tab. |
 | **Existing serial port** | **Windows** programs (ScanMaster-ELM, OBD Auto Doctor, …), or a second PC on a null-modem cable | Install [com0com](https://com0com.sourceforge.net/): it creates a linked pair such as COM10 ↔ COM11. Choose COM11 here and COM10 in the program. |
 | **Bluetooth** (Linux) | Android apps that pair with "OBDII" Bluetooth adapters | Pair the phone with this computer in the system Bluetooth settings, then choose this computer in the app. Many apps only list devices named *OBDII*; tick *Rename this computer's Bluetooth* for those. On Windows, add an *incoming* COM port in the Bluetooth settings and use it as an existing serial port. |
 
 iPhones and iPads can only use **Wi-Fi**: iOS apps do not use classic Bluetooth adapters.
+
+**One-time setup for the virtual serial port (Linux).** Linux programs look for serial ports in `/dev`, and only
+the administrator can add names there. Click **One-time setup…** next to *Name in /dev* and run the two commands
+it shows in a terminal (they ask for your password; ecusim never runs them itself). They add a small system rule
+that creates `/dev/ttyELM327` at every boot, pointing at the port ecusim opens, so you never have to do it again.
+The tab then says *“/dev/ttyELM327 is set up”*. Some programs only list ports with names like `ttyUSB…`; give it
+such a name (e.g. `ttyUSB-ELM327`, not an existing one) before the setup. A few programs (most Qt-based ones)
+list only ports the kernel itself created and will not show any virtual port: type the path into them if they
+allow it, or use two USB-serial adapters wired to each other with *Existing serial port*.
 
 The same switches exist on the command line, for one session only:
 
@@ -625,6 +634,7 @@ show that the trims are normal, the monitor passes and, after the right number o
 | The window does not open (Linux) | Run it from a terminal to see the message. If `/tmp` does not allow running programs, start it with `TMPDIR=$HOME/.cache ./ecusim`. |
 | An ELM327 app says "unable to connect" or "no data" | Ignition ON? (The adapter answers with the key off, the car does not.) Is the app set to *automatic* protocol, or to CAN 11-bit 500 kbit/s? |
 | A phone can't reach the Wi-Fi adapter | Is *Allow phones and other computers to connect* ticked? Same Wi-Fi network as the computer? Some school networks block devices from reaching each other; a phone hotspot that the computer joins works around that. Check the computer's firewall allows the port (35000). |
+| A Linux program does not list /dev/ttyELM327 | Has the one-time setup been done (the tab says so)? Is the virtual serial port switched **On**? Try a name the program looks for, e.g. `ttyUSB-ELM327` (run the setup again for the new name). Programs that list only kernel devices never show virtual ports: type the path, or use two crossed USB-serial adapters. |
 | The ELM327 tab says the port is in use | Another program (or a second ecusim) already uses that TCP port or serial port. Pick another one. |
 | A monitor never completes | Read its hint on the Monitors tab. EVAP and the O2 heater need a cold start (Environment → Cold soak). |
 

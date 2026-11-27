@@ -268,9 +268,10 @@ def local_addresses() -> list[str]:
 class PtyTransport(Transport):
     kind, title = "pty", "Virtual serial port"
 
-    def __init__(self, emu: Elm327, link: str | Path = "", **kw):
+    def __init__(self, emu: Elm327, link: str | Path = "", dev_name: str = "", **kw):
         super().__init__(emu, **kw)
         self.link = Path(link) if link else default_pty_link()
+        self.dev_name = dev_name  # permanent name in /dev, if the one-time setup was done
         self.device = ""
         self._master = self._slave = -1
         self._last_rx = 0.0
@@ -321,12 +322,25 @@ class PtyTransport(Transport):
 
     def status(self) -> str:
         s = super().status()
-        return s if self.error or not self.running else f"{s} — {self.link} → {self.device}"
+        if self.error or not self.running:
+            return s
+        from . import devlink
+
+        if self.dev_name and devlink.state(self.dev_name, self.link) == "ok":
+            return f"{s} — programs can open /dev/{self.dev_name}"
+        return f"{s} — {self.link} → {self.device}"
+
+    @property
+    def path_for_apps(self) -> str:
+        from . import devlink
+
+        if self.dev_name and devlink.state(self.dev_name, self.link) == "ok":
+            return f"/dev/{self.dev_name}"
+        return str(self.link)
 
 
 def default_pty_link() -> Path:
-    if os.access("/dev", os.W_OK):
-        return Path("/dev/ttyELM327")
+    """ecusim's own link to the pseudo-terminal; /dev/ttyELM327 points here once set up (see devlink)."""
     from ..persistence import default_state_dir
 
     return default_state_dir() / "ttyELM327"

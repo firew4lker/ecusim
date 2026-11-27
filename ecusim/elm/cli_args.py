@@ -15,13 +15,33 @@ def add_arguments(ap: argparse.ArgumentParser) -> None:
                    help="Wi-Fi style adapter on a TCP port (default 35000, this computer only; "
                         "HOST 0.0.0.0 lets phones on the network connect)")
     g.add_argument("--elm-pty", metavar="PATH", nargs="?", const="",
-                   help="virtual serial port (Linux/macOS), reachable at PATH (default /dev/ttyELM327 if "
-                        "writable, otherwise in the ecusim data folder)")
+                   help="virtual serial port (Linux/macOS) with its link at PATH (default: in the ecusim data "
+                        "folder; on Linux also /dev/ttyELM327 after a one-time setup that ecusim prints)")
     g.add_argument("--elm-serial", metavar="PORT[@BAUD]",
                    help="answer on an existing serial port, e.g. COM11 or /dev/ttyUSB0@38400")
     g.add_argument("--elm-bt", metavar="NAME", nargs="?", const="OBDII",
                    help="Bluetooth serial adapter (Linux, BlueZ); pair from the phone first")
     g.add_argument("--no-elm", action="store_true", help="start with every ELM327 transport off")
+
+
+def hints(mgr: ElmManager) -> list[str]:
+    """Advice to print at start-up: how to give the virtual serial port its permanent /dev name."""
+    from . import devlink
+
+    t = mgr.transports.get("pty")
+    if t is None or not t.running or devlink.supported():
+        return []
+    name = mgr.settings["pty"]["dev_name"] or devlink.DEFAULT_NAME
+    st = devlink.state(name, t.link)
+    if st == "ok":
+        return [f"ELM327 virtual serial port: programs can open /dev/{name}"]
+    if st == "taken":
+        return [f"ELM327 virtual serial port: /dev/{name} is another device; choose another name in the ELM327 tab"]
+    install, _ = devlink.setup_commands(name, t.link)
+    return [f"ELM327 virtual serial port: {t.link}",
+            f"Most Linux programs only look in /dev. To make it /dev/{name}, run once"
+            + (" (it stays after reboots):" if devlink.survives_reboot() else " (until the next reboot):"),
+            *("    " + line for line in install.splitlines())]
 
 
 def apply(mgr: ElmManager, args: argparse.Namespace) -> list[str]:

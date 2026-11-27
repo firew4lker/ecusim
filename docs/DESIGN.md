@@ -559,7 +559,7 @@ does. A second client is refused, with the reason shown in the UI.
 | Transport | OS | How the app connects | Settings |
 |---|---|---|---|
 | **TCP ("Wi-Fi ELM327")** | all | Apps with a Wi-Fi adapter option (Torque, Car Scanner, OBD Auto Doctor), python-OBD with `socket://host:port` | Port (default **35000**). **Listen on:** this computer only (`127.0.0.1`, default) or the network (`0.0.0.0`, for phones on the classroom Wi-Fi). When on the network, the UI shows the IP address to type into the phone. |
-| **Virtual serial port (pty)** | Linux, macOS | Any program that opens a serial port, including Windows tools under Wine (`~/.wine/dosdevices/comN` symlink) | Link name (default `/dev/ttyELM327` if writable, otherwise `~/.local/share/ecusim/ttyELM327`). The link is removed when the transport is switched off. |
+| **Virtual serial port (pty)** | Linux, macOS | Any program that opens a serial port, including Windows tools under Wine (`~/.wine/dosdevices/comN` symlink) | ecusim's link (default `~/.local/share/ecusim/ttyELM327`), re-pointed at the new pty on every start and removed when switched off. **Linux, name in /dev** (default `ttyELM327`): programs look in `/dev`, which only root can write. A one-time systemd-tmpfiles rule (`L+ /dev/ttyELM327 - - - - <ecusim's link>`) creates the name at every boot; the tab and the start-up output show the commands, and ecusim never runs them itself. Programs that list only kernel-registered ports (`/sys/class/tty`, e.g. Qt's QSerialPortInfo) can't see any pty; for those: two crossed USB-serial adapters, or tty0tty. |
 | **Existing serial port** | all | **Windows:** a com0com virtual cable pair (ecusim opens COM11, the app opens COM10). Also a real USB-serial null-modem cable to a second PC running the scan software. | Port, baud rate (default 38400) |
 | **Bluetooth (SPP)** | Linux; Windows via a COM port | Android apps that pair with "OBDII" Bluetooth adapters | **Linux:** ecusim registers a Serial Port Profile with BlueZ over D-Bus and appears as an adapter named (default) `OBDII`. Pairing is done by the user in the OS Bluetooth settings. Needs an optional D-Bus package; the option is greyed out with the reason if it's missing. **Windows:** create an *incoming* COM port in Windows Bluetooth settings, then use **Existing serial port**. **macOS:** not supported. |
 
@@ -616,6 +616,7 @@ because some apps look for v2.1.
   "wait for the car" and the CAN frames a real adapter would exchange (for the trace).
 - `ecusim/elm/transports.py`: TCP, pty, serial and Bluetooth transports, one thread each, each feeding its own
   emulator instance. Bluetooth uses `jeepney` (pure-Python D-Bus) to register the profile with BlueZ.
+- `ecusim/elm/devlink.py`: the permanent /dev name (state check and setup commands).
 - `ecusim/elm/manager.py`: settings, on/off, `config.json`, traces. `ecusim/elm/cli_args.py`: the flags.
 - `ecusim/ui/elm_panel.py`: the ELM327 tab.
 

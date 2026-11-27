@@ -381,3 +381,47 @@ def test_python_obd_end_to_end(tmp_path):
             conn.close()
     finally:
         ctl.shutdown()
+
+
+# ---------------------------------------------------------------------- permanent /dev name (Linux)
+def test_devlink_state_and_commands(tmp_path):
+    from ecusim.elm import devlink
+
+    dev = tmp_path / "dev"
+    dev.mkdir()
+    target = tmp_path / "home" / "ttyELM327"
+    assert devlink.state("ttyELM327", target, dev) == "missing"
+    (dev / "ttyELM327").symlink_to(target)
+    assert devlink.state("ttyELM327", target, dev) == "ok"
+    assert devlink.state("ttyELM327", tmp_path / "elsewhere", dev) == "other"
+    (dev / "ttyUSB0").write_text("")
+    assert devlink.state("ttyUSB0", target, dev) == "taken"
+
+    install, remove = devlink.setup_commands("ttyUSB-ELM327", target)
+    assert "sudo" in install and "/dev/ttyUSB-ELM327" in install and str(target) in install
+    assert "/dev/ttyUSB-ELM327" in remove
+    if devlink.survives_reboot():
+        assert "L+ /dev/ttyUSB-ELM327 - - - - " + str(target) in install
+        assert "/etc/tmpfiles.d/ecusim-elm327-ttyUSB-ELM327.conf" in install and remove
+    for bad in ("", "../etc/passwd", "a b", "x/y", "-rf"):
+        assert not devlink.valid_name(bad)
+        with pytest.raises(ValueError):
+            devlink.setup_commands(bad, target)
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="the /dev name is Linux only")
+def test_startup_hint_offers_setup(car, tmp_path, monkeypatch):
+    from ecusim.elm import devlink
+
+    mgr = ElmManager(car.link())
+    mgr.update("pty", link=str(tmp_path / "tty"), dev_name="ttyTEST-ecusim-not-there")
+    mgr.set_enabled("pty", True)
+    try:
+        lines = cli_args.hints(mgr)
+        assert "/dev/ttyTEST-ecusim-not-there" in lines[1] and any("sudo" in x for x in lines)
+        monkeypatch.setattr(devlink, "state", lambda *a, **k: "ok")
+        assert cli_args.hints(mgr) == ["ELM327 virtual serial port: programs can open /dev/ttyTEST-ecusim-not-there"]
+        assert mgr.transports["pty"].path_for_apps == "/dev/ttyTEST-ecusim-not-there"
+        assert "programs can open /dev/ttyTEST-ecusim-not-there" in mgr.status("pty")
+    finally:
+        mgr.stop_all()

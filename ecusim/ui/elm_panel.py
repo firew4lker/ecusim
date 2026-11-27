@@ -3,9 +3,13 @@
 
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QDoubleSpinBox,
     QFormLayout,
     QFrame,
@@ -22,6 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ..elm import devlink
 from ..elm.emulator import IDENTITIES
 from ..elm.manager import KINDS, unavailable
 from ..elm.transports import default_pty_link, local_addresses
@@ -35,7 +40,8 @@ TITLES = {
 }
 HELP = {
     "tcp": "For apps with a Wi-Fi adapter option (Torque, Car Scanner, OBD Auto Doctor) and python-OBD.",
-    "pty": "A serial port that exists only while this is on. Point the diagnostic program at the path.",
+    "pty": "A serial port that exists only while this is on. Linux programs look for ports in /dev: "
+           "do the one-time setup once, then choose the /dev name in the program.",
     "serial": "Windows: one end of a com0com pair (the app opens the other end). "
               "Or a real USB-serial null-modem cable to another computer.",
     "bt": "Android apps that pair with 'OBDII' Bluetooth adapters. Pair the phone with this computer first.",
@@ -85,6 +91,15 @@ class ElmPanel(QWidget):
         self.tcp_net.setToolTip("Off: only programs on this computer can connect (127.0.0.1).")
         self.pty_link = QLineEdit(s["pty"]["link"])
         self.pty_link.setPlaceholderText(str(default_pty_link()))
+        self.pty_link.setToolTip("ecusim's own link to the port. Leave empty for the default.")
+        self.dev_name = QLineEdit(s["pty"]["dev_name"])
+        self.dev_name.setPlaceholderText(devlink.DEFAULT_NAME)
+        self.dev_name.setToolTip("The name programs see in /dev. Some programs only list names such as "
+                                 "ttyUSB… or ttyS…; pick one that does not exist yet, e.g. ttyUSB-ELM327.")
+        self.dev_setup = QPushButton("One-time setup…")
+        self.dev_setup.clicked.connect(self._dev_setup)
+        self.dev_state = QLabel("")
+        self.dev_state.setWordWrap(True)
         self.ser_port = QComboBox()
         self.ser_port.setEditable(True)
         self.ser_refresh = QPushButton("Rescan")
@@ -106,11 +121,12 @@ class ElmPanel(QWidget):
         ser_row.addWidget(self.ser_refresh)
         rows = {
             "tcp": [("Port", self.tcp_port), ("", self.tcp_net)],
-            "pty": [("Path", self.pty_link)],
+            "pty": [("Link", self.pty_link)] + ([] if devlink.supported() else
+                    [("Name in /dev", self._row(self.dev_name, self.dev_setup)), ("", self.dev_state)]),
             "serial": [("Port", ser_row), ("Baud rate", self.ser_baud)],
             "bt": [("Name", self.bt_name), ("", self.bt_rename)],
         }
-        self.fields = {"tcp": [self.tcp_port, self.tcp_net], "pty": [self.pty_link],
+        self.fields = {"tcp": [self.tcp_port, self.tcp_net], "pty": [self.pty_link, self.dev_name],
                        "serial": [self.ser_port, self.ser_refresh, self.ser_baud],
                        "bt": [self.bt_name, self.bt_rename]}
 
@@ -169,6 +185,85 @@ class ElmPanel(QWidget):
         lay.addWidget(split)
         self.sync()
 
+    @staticmethod
+    def _row(*widgets) -> QHBoxLayout:
+        row = QHBoxLayout()
+        for i, w in enumerate(widgets):
+            row.addWidget(w, 1 if i == 0 else 0)
+        return row
+
+    # ------------------------------------------------------------------ /dev name
+    def _dev_name(self) -> str:
+        return self.dev_name.text().strip() or devlink.DEFAULT_NAME
+
+    def _pty_target(self):
+        t = self.mgr.transports.get("pty")
+        if t is not None and t.running:
+            return t.link
+        link = self.pty_link.text().strip()
+        from pathlib import Path
+
+        return Path(link) if link else default_pty_link()
+
+    def _dev_setup(self) -> None:
+        name = self._dev_name()
+        target = self._pty_target()
+        if devlink.valid_name(name):
+            self.mgr.update("pty", dev_name=name)
+            self._save()
+        if not devlink.valid_name(name):
+            text, cmds = f"“{name}” is not a usable device name: use letters, digits, '.', '_' or '-'.", ""
+        elif devlink.state(name, target) == "taken":
+            text, cmds = (f"/dev/{name} already exists and is not ecusim's link (a real device?). "
+                          "Choose another name."), ""
+        else:
+            install, remove = devlink.setup_commands(name, target)
+            when = ("It survives reboots: you only do this once." if devlink.survives_reboot()
+                    else "Without systemd the link disappears at the next reboot; run it again then.")
+            text = (f"Linux programs look for serial ports in /dev, which only the administrator can change. "
+                    f"Run these commands once in a terminal (they ask for your password) to create "
+                    f"<b>/dev/{name}</b>. {when}<br><br>"
+                    f"ecusim does not run them itself. Afterwards choose /dev/{name} in the diagnostic "
+                    f"program while the virtual serial port is on.")
+            cmds = install
+            text += f"<br><br>To undo it later:<br><code>{remove}</code>"
+        dlg = QDialog(self)
+        dlg.setWindowTitle(f"Permanent name /dev/{name}")
+        lay = QVBoxLayout(dlg)
+        lbl = QLabel(text)
+        lbl.setWordWrap(True)
+        lbl.setTextInteractionFlags(lbl.textInteractionFlags() | Qt.TextInteractionFlag.TextSelectableByMouse)
+        lay.addWidget(lbl)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        if cmds:
+            box = QPlainTextEdit(cmds)
+            box.setReadOnly(True)
+            box.setFont(_mono())
+            box.setMinimumWidth(640)
+            box.setFixedHeight(box.fontMetrics().lineSpacing() * (cmds.count("\n") + 3))
+            lay.addWidget(box)
+            copy = buttons.addButton("Copy commands", QDialogButtonBox.ButtonRole.ActionRole)
+            copy.clicked.connect(lambda: QApplication.clipboard().setText(cmds))
+        buttons.rejected.connect(dlg.reject)
+        lay.addWidget(buttons)
+        self._dialog = dlg  # tests look at it
+        dlg.open()
+
+    def _refresh_dev_state(self) -> None:
+        if devlink.supported():
+            return
+        name = self._dev_name()
+        st = devlink.state(name, self._pty_target()) if devlink.valid_name(name) else "invalid"
+        msg = {
+            "ok": f"<b style='color:#3a3'>/dev/{name} is set up</b>: choose it in the program.",
+            "missing": f"/dev/{name} is not set up yet: click <i>One-time setup…</i>",
+            "other": f"/dev/{name} points somewhere else (another link path?): run the setup again.",
+            "taken": f"<span style='color:#d33'>/dev/{name} is another device: choose another name.</span>",
+            "invalid": "<span style='color:#d33'>not a usable device name</span>",
+        }[st]
+        if self.dev_state.text() != msg:
+            self.dev_state.setText(msg)
+
     # ------------------------------------------------------------------ actions
     def _scan_ports(self) -> None:
         current = self.ser_port.currentText()
@@ -189,7 +284,7 @@ class ElmPanel(QWidget):
         if kind == "tcp":
             return {"port": self.tcp_port.value(), "network": self.tcp_net.isChecked()}
         if kind == "pty":
-            return {"link": self.pty_link.text().strip()}
+            return {"link": self.pty_link.text().strip(), "dev_name": self._dev_name()}
         if kind == "serial":
             baud = self.ser_baud.currentText().strip()
             return {"port": self.ser_port.currentText().strip(), "baud": int(baud) if baud.isdigit() else 38400}
@@ -227,6 +322,7 @@ class ElmPanel(QWidget):
         self.refresh_status()
 
     def refresh_status(self) -> None:
+        self._refresh_dev_state()
         for kind in KINDS:
             if unavailable(kind):
                 continue

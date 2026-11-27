@@ -23,7 +23,7 @@ DEFAULTS: dict = {
     "identity": DEFAULT_IDENTITY,
     "latency_ms": 40.0,
     "tcp": {"enabled": False, "port": 35000, "network": False},
-    "pty": {"enabled": False, "link": ""},
+    "pty": {"enabled": False, "link": "", "dev_name": "ttyELM327"},
     "serial": {"enabled": False, "port": "", "baud": 38400},
     "bt": {"enabled": False, "name": "OBDII", "rename": False},
 }
@@ -114,7 +114,7 @@ class ElmManager:
         if kind == "tcp":
             return TcpTransport(emu, "0.0.0.0" if c["network"] else "127.0.0.1", int(c["port"]), log=self._log)
         if kind == "pty":
-            return PtyTransport(emu, c["link"], log=self._log)
+            return PtyTransport(emu, c["link"], c["dev_name"], log=self._log)
         if kind == "serial":
             return SerialTransport(emu, c["port"], int(c["baud"]), log=self._log)
         return BluetoothTransport(emu, c["name"], bool(c["rename"]), log=self._log)

@@ -64,6 +64,10 @@ def main(argv: list[str] | None = None) -> int:
 
     for err in apply_elm(ctl.elm, args):
         print(err, file=sys.stderr)
+    from ..elm.cli_args import hints as elm_hints
+
+    for line in elm_hints(ctl.elm):
+        print(line)
     win = MainWindow(ctl)
     win.can.sync_from_controller()
     win.elm.sync()

@@ -102,6 +102,10 @@ def main(argv: list[str] | None = None) -> int:
         print(err, file=sys.stderr)
     for kind, t in elm.transports.items():
         print(f"ELM327 {t.title}: {t.status()}")
+    from .elm.cli_args import hints as elm_hints
+
+    for line in elm_hints(elm):
+        print(line)
     if can_srv is None and not elm.transports:
         print("warning: no CAN bus and no ELM327 transport: nothing can talk to the ECU", file=sys.stderr)
     print(f"VIN {info.vin}", flush=True)
