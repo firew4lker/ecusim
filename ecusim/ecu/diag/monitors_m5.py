@@ -354,7 +354,14 @@ class VvtMonitor(Monitor):
                     diag.dtc.report("P0011", False)
                     diag.dtc.report("P0012", False)
                 self.completed()
-        self.hint = "" if self.complete_this_cycle else f"checking cam phasing ({min(n * dt, 30):.0f}/30 s)"
+        if self.complete_this_cycle:
+            self.hint = ""
+        elif n * dt < 30.0:
+            self.hint = f"checking cam phasing ({n * dt:.0f}/30 s)"
+        else:
+            # the rest position is only measured at warm idle; without it P0016 cannot be told from P0011/P0012
+            self.hint = (f"cam phasing checked; now idle for {self._park_n * dt:.0f}/5 s "
+                         "to check the cam's rest position")
 
 
 # ====================================================================== EVAP leak test
